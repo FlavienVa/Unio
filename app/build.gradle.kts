@@ -186,6 +186,7 @@ dependencies {
     implementation(libs.androidx.compose.material)
     implementation(libs.core)
     implementation(libs.play.services.location)
+    implementation(libs.google.firebase.functions.ktx)
 
     testImplementation(libs.test.core.ktx)
     debugImplementation(libs.androidx.ui.tooling)

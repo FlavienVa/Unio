@@ -48,6 +48,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import com.android.unio.R
 import com.android.unio.model.association.Association
 import com.android.unio.model.event.Event
@@ -71,6 +72,7 @@ import com.android.unio.ui.theme.primaryLight
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.io.File
 
 @Composable
 fun AccountDetailsScreen(
@@ -88,19 +90,23 @@ fun AccountDetailsScreen(
         if (profilePictureUri.value == Uri.EMPTY) {
           createUser("", userId!!)
         } else {
-          val inputStream = context.contentResolver.openInputStream(profilePictureUri.value)
-          imageRepository.uploadImage(
-              inputStream!!,
-              StoragePathsStrings.USER_IMAGES + userId,
-              onSuccess = { createUser(StoragePathsStrings.USER_IMAGES + userId, userId!!) },
-              onFailure = { exception ->
-                Log.e("AccountDetails", "Error uploading image: $exception")
-                Toast.makeText(
-                        context,
-                        context.getString(R.string.account_details_image_upload_error),
-                        Toast.LENGTH_SHORT)
-                    .show()
-              })
+            val inputStream = context.contentResolver.openInputStream(profilePictureUri.value)
+            if (inputStream != null) {
+                imageRepository.uploadImage(
+                    inputStream,
+                    StoragePathsStrings.USER_IMAGES + userId,
+                    onSuccess = { createUser(StoragePathsStrings.USER_IMAGES + userId, userId!!) },
+                    onFailure = { exception ->
+                        Log.e("AccountDetails", "Error uploading image: $exception")
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.account_details_image_upload_error),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                )
+            }
+
         }
       },
       onUploadUser = { user ->
@@ -388,44 +394,61 @@ private fun ProfilePicturePicker(
     profilePictureUri: MutableState<Uri>,
     onProfilePictureUriChange: () -> Unit,
 ) {
-  val context = LocalContext.current
-  val pickMedia =
-      rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) {
-          profilePictureUri.value = uri
+    val context = LocalContext.current
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success) {
+            // The URI is already stored in profilePictureUri by the camera launcher.
         }
-      }
+    }
 
-  Row(
-      modifier = Modifier.fillMaxWidth().padding(8.dp),
-      horizontalArrangement = Arrangement.SpaceEvenly,
-      verticalAlignment = Alignment.CenterVertically) {
+    val pickMedia = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) {
+            profilePictureUri.value = uri
+        }
+    }
+
+    // Create a temporary file URI for the camera photo
+    val tempFileUri = remember {
+        mutableStateOf(Uri.EMPTY)
+    }
+
+    // Camera option
+    fun launchCamera() {
+        val tempFile = File.createTempFile("camera_photo_", ".jpg", context.cacheDir)
+        tempFileUri.value = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", tempFile)
+        cameraLauncher.launch(tempFileUri.value)
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Text(
             text = context.getString(R.string.account_details_add_profile_picture),
-            modifier =
-                Modifier.widthIn(max = 140.dp).testTag(AccountDetailsTestTags.PROFILE_PICTURE_TEXT),
-            style = AppTypography.bodyLarge)
+            modifier = Modifier.widthIn(max = 140.dp).testTag(AccountDetailsTestTags.PROFILE_PICTURE_TEXT),
+            style = AppTypography.bodyLarge
+        )
 
         if (profilePictureUri.value == Uri.EMPTY) {
-          Icon(
-              imageVector = Icons.Rounded.AccountCircle,
-              contentDescription =
-                  context.getString(R.string.account_details_content_description_add),
-              tint = primaryLight,
-              modifier =
-                  Modifier.clickable {
-                        pickMedia.launch(
-                            PickVisualMediaRequest(
-                                ActivityResultContracts.PickVisualMedia.ImageOnly))
-                      }
-                      .size(100.dp)
-                      .testTag(AccountDetailsTestTags.PROFILE_PICTURE_ICON))
+            Icon(
+                imageVector = Icons.Rounded.AccountCircle,
+                contentDescription = context.getString(R.string.account_details_content_description_add),
+                tint = primaryLight,
+                modifier = Modifier.clickable {
+                    // Open a dialog or selection menu for "Camera" or "Gallery"
+                    pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                }.size(100.dp).testTag(AccountDetailsTestTags.PROFILE_PICTURE_ICON)
+            )
         } else {
-          ProfilePictureWithRemoveIcon(
-              profilePictureUri = profilePictureUri.value, onRemove = onProfilePictureUriChange)
+            ProfilePictureWithRemoveIcon(
+                profilePictureUri = profilePictureUri.value,
+                onRemove = onProfilePictureUriChange
+            )
         }
-      }
+    }
 }
+
 
 @Composable
 private fun ProfilePictureWithRemoveIcon(

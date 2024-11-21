@@ -7,6 +7,7 @@ coilCompose = "2.2.2"
 firebaseAuthVersion = "22.0.0"
 firebaseBom = "33.3.0"
 firebaseFirestoreVersion = "24.4.0"
+firebaseFunctionsKtx = "23.0.0"
 googleServices = "4.4.2"
 hiltAndroid = "2.48"
 hiltAndroidCompiler = "2.48"
@@ -101,6 +102,7 @@ volley = "1.2.1"
 composeMaterial = "1.4.0"
 core = "1.46.0"
 playServicesLocation = "21.3.0"
+firebaseFunctionsKtxVersion = "21.1.0"
 
 
 [libraries]
@@ -126,6 +128,7 @@ compose-test-junit = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 compose-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 firebase-auth-v2200 = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuthVersion" }
 firebase-firestore-v2440 = { module = "com.google.firebase:firebase-firestore", version.ref = "firebaseFirestoreVersion" }
+firebase-functions-ktx = { module = "com.google.firebase:firebase-functions-ktx", version.ref = "firebaseFunctionsKtx" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
 hilt-android-compiler-v2511 = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompilerVersion" }
@@ -202,6 +205,7 @@ volley = { group = "com.android.volley", name = "volley", version.ref = "volley"
 androidx-compose-material = { group = "androidx.wear.compose", name = "compose-material", version.ref = "composeMaterial" }
 core = { group = "com.google.ar", name = "core", version.ref = "core" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+google-firebase-functions-ktx = { group = "com.google.firebase", name = "firebase-functions-ktx", version.ref = "firebaseFunctionsKtxVersion" }
 
 
 
